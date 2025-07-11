@@ -4,12 +4,12 @@
   "description": "A template repository with best practices",
   "scripts": {
     "prepare": "husky install",
-    "lint": "eslint --config .github/linters/.eslintrc.js .",
-    "lint:fix": "eslint --config .github/linters/.eslintrc.js --fix .",
+    "lint": "eslint --config .github/linters/.eslintrc.js 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/'",
+    "lint:fix": "eslint --config .github/linters/.eslintrc.js --fix 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/'",
     "format": "prettier --config .github/linters/.prettierrc --write .",
     "test": "jest --passWithNoTests",
     "ci": "npm run lint && npm test",
-    "build": "echo 'Replace with your actual build command'",
+    "build": "tsc",
     "release": "semantic-release"
   },
   "devDependencies": {
@@ -21,6 +21,7 @@
     "@semantic-release/github": "^11.0.1",
     "@semantic-release/gitlab": "^13.2.4",
     "@semantic-release/npm": "^12.0.1",
+    "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.26.1",
     "eslint": "^8.44.0",

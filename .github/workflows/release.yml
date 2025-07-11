@@ -4,35 +4,11 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  update_release_draft:
-    name: Update Release Draft
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Update Release Draft
-        uses: release-drafter/release-drafter@v5
-        with:
-          name: Release ${{ github.run_number }}
-          tag: v${{ github.run_number }}
-          publish: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   semantic-release:
     name: Semantic Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     permissions:
       contents: write
       issues: write
