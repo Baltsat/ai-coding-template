@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Check if commitlint is installed
+if ! command -v npx commitlint &> /dev/null; then
+  echo "commitlint is not installed. Skipping commit message validation."
+  exit 0
+fi
+
+# Validate commit message format
+npx --no -- commitlint --edit $1

@@ -1,0 +1,21 @@
+{
+  "ignores": [
+    "@commitlint/cli",
+    "@commitlint/config-conventional",
+    "@semantic-release/changelog",
+    "@semantic-release/exec",
+    "@semantic-release/git",
+    "@semantic-release/github",
+    "@semantic-release/gitlab",
+    "@semantic-release/npm",
+    "@typescript-eslint/*"
+  ],
+  "skip-missing": true,
+  "ignore-dirs": [
+    "examples",
+    "docs",
+    "coverage",
+    "dist",
+    "build"
+  ]
+}

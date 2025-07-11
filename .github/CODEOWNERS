@@ -1,0 +1,47 @@
+# This file defines the code owners for this repository
+
+# Code owners are automatically requested for review when someone opens a PR
+
+# that modifies code they own. Learn more at:
+
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo (unless a later match takes precedence)
+
+-       Konstantin Baltsat
+
+# Examples of specific file/directory ownership:
+
+# Owner for GitHub specific files
+
+/.github/ @TwoHearts-AI/maintainers
+
+# Owners for documentation
+
+/docs/ @TwoHearts-AI/documentation
+
+# Owners for source code (uncomment and modify as needed)
+
+# /src/ @TwoHearts-AI/developers
+
+# Owners for tests (uncomment and modify as needed)
+
+# /tests/ @TwoHearts-AI/qa
+
+# Owners for specific files (uncomment and modify as needed)
+
+# package.json @TwoHearts-AI/devops
+
+# \*.md @TwoHearts-AI/documentation
+
+# To add individual owners, you can add GitHub usernames
+
+# /core/ @username1 @username2
+
+# Tips:
+
+# - Team names must be in the format @org/team-name
+
+# - Teams must have explicit write access to the repository
+
+# - The last matching pattern takes precedence

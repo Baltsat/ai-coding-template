@@ -1,0 +1,39 @@
+name: Branch Protection Settings - Disabled
+# Branch protection has been disabled on GitHub
+# Configuration kept for reference purposes
+
+# branches:
+#   - name: main
+#     # Требовать проверки прохождения перед слиянием
+#     protection:
+#       required_status_checks:
+#         # Требовать обновление ветки перед слиянием
+#         strict: true
+#         # Список проверок, которые должны проходить
+#         contexts:
+#           - 'CI / build'
+#           - 'CodeQL'
+
+#       # Требовать проверки кода перед слиянием
+#       required_pull_request_reviews:
+#         # Отклонять устаревшие проверки после новых коммитов
+#         dismiss_stale_reviews: true
+#         # Требовать подтверждения от владельца кода
+#         require_code_owner_reviews: true
+#         # Минимальное количество проверяющих
+#         required_approving_review_count: 1
+
+#       # Запретить принудительные push-и
+#       allow_force_pushes: false
+
+#       # Запретить удаление ветки
+#       allow_deletions: false
+
+#       # Блокировать создание теневых веток
+#       block_creations: true
+
+#       # Требовать линейную историю (предотвращает merge-коммиты)
+#       required_linear_history: true
+
+#       # Включить ограничения для администраторов (они тоже должны соблюдать эти правила)
+#       enforce_admins: true

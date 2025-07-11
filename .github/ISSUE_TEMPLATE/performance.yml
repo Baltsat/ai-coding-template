@@ -1,0 +1,127 @@
+name: Performance Issue
+description: Report performance problems or optimization requests
+title: '[Performance]: '
+labels: ['performance', 'triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this performance issue!
+
+        **Before submitting, please:**
+        - Check if this is already known
+        - Provide specific metrics and measurements
+        - Include system specifications
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Performance Issue Description
+      description: Describe the performance problem you're experiencing.
+      placeholder: |
+        What performance issue are you seeing?
+
+        What should the performance be like?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: performance-type
+    attributes:
+      label: Performance Type
+      description: What type of performance issue is this?
+      options:
+        - Slow startup time
+        - High memory usage
+        - Slow response time
+        - High CPU usage
+        - Slow build time
+        - Slow test execution
+        - Network latency
+        - Database performance
+        - UI/UX responsiveness
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this performance issue?
+      options:
+        - Critical (unusable)
+        - High (significantly impacts workflow)
+        - Medium (noticeable slowdown)
+        - Low (minor inconvenience)
+    validations:
+      required: true
+
+  - type: textarea
+    id: metrics
+    attributes:
+      label: Performance Metrics
+      description: Provide specific measurements and metrics.
+      placeholder: |
+        - Current performance: [measurement]
+        - Expected performance: [measurement]
+        - Performance degradation: [how much worse]
+
+        Examples:
+        - Response time: 5s (was 1s)
+        - Memory usage: 2GB (was 500MB)
+        - Build time: 10min (was 2min)
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this performance issue?
+      placeholder: |
+        1. Start the application
+        2. Perform action X
+        3. Observe slow performance
+        4. Measure the impact
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment Details
+      description: Provide details about your environment.
+      placeholder: |
+        - Operating System: [OS version]
+        - Hardware: [CPU, RAM, etc.]
+        - Software versions: [relevant versions]
+        - Configuration: [relevant config]
+        - Load: [typical usage patterns]
+
+  - type: textarea
+    id: profiling
+    attributes:
+      label: Profiling Information
+      description: Any profiling data, stack traces, or performance analysis.
+      placeholder: |
+        - CPU profiling results
+        - Memory profiling results
+        - Network profiling results
+        - Stack traces during slow operations
+
+  - type: textarea
+    id: optimization-suggestions
+    attributes:
+      label: Optimization Suggestions
+      description: Any ideas for how this could be optimized?
+      placeholder: |
+        - Potential bottlenecks you've identified
+        - Optimization strategies you've considered
+        - Similar issues in other projects
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

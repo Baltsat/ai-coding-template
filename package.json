@@ -1,0 +1,55 @@
+{
+  "name": "project-template",
+  "version": "1.0.0",
+  "description": "A template repository with best practices",
+  "scripts": {
+    "prepare": "husky install",
+    "lint": "eslint --config .github/linters/.eslintrc.js .",
+    "lint:fix": "eslint --config .github/linters/.eslintrc.js --fix .",
+    "format": "prettier --config .github/linters/.prettierrc --write .",
+    "test": "jest --passWithNoTests",
+    "ci": "npm run lint && npm test",
+    "build": "echo 'Replace with your actual build command'",
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.7",
+    "@commitlint/config-conventional": "^17.6.7",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^11.0.1",
+    "@semantic-release/gitlab": "^13.2.4",
+    "@semantic-release/npm": "^12.0.1",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^8.44.0",
+    "husky": "^8.0.3",
+    "jest": "^29.7.0",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.0.0",
+    "semantic-release": "^24.2.3",
+    "ts-jest": "^29.3.1",
+    "typescript": "^5.8.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --config .github/linters/.eslintrc.js --fix --ignore-pattern '.github/config/*' --ignore-pattern '.github/linters/*'",
+      "prettier --config .github/linters/.prettierrc --write",
+      "jest --bail --findRelatedTests --passWithNoTests"
+    ],
+    "*.{json,yml,yaml}": [
+      "prettier --config .github/linters/.prettierrc --write"
+    ],
+    "*.md": [
+      "prettier --config .github/linters/.prettierrc --write",
+      "markdownlint --config .github/linters/.markdown-lint.yml --fix"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "./.github/config/commitlint.config.js",
+      "@commitlint/config-conventional"
+    ]
+  }
+}

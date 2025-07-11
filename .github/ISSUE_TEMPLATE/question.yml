@@ -1,0 +1,98 @@
+name: Question / Help
+description: Ask a question or get help with the project
+title: '[Question]: '
+labels: ['question', 'help wanted']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out for help!
+
+        **Before asking, please:**
+        - Check the documentation first
+        - Search existing issues for similar questions
+        - Be specific about what you're trying to accomplish
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: |
+        I'm trying to...
+
+        I want to understand...
+
+        How do I...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of question is this?
+      options:
+        - Setup/Installation
+        - Configuration
+        - Usage/How-to
+        - Troubleshooting
+        - Best Practices
+        - Architecture/Design
+        - Performance
+        - Security
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide context about your situation, environment, or what you're trying to achieve.
+      placeholder: |
+        - What are you trying to accomplish?
+        - What have you tried so far?
+        - What's your environment/setup?
+        - Any relevant code or configuration?
+
+  - type: input
+    id: version
+    attributes:
+      label: Version (if applicable)
+      description: What version are you using?
+      placeholder: e.g., v1.0.0, latest, or "not sure"
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this question?
+      options:
+        - Blocking (can't proceed without help)
+        - Important (need help soon)
+        - General (curiosity/learning)
+        - Low priority
+    validations:
+      required: true
+
+  - type: textarea
+    id: research
+    attributes:
+      label: What I've tried
+      description: What have you already tried or researched?
+      placeholder: |
+        - I've read...
+        - I've tried...
+        - I've searched for...
+        - I found this but it didn't help...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

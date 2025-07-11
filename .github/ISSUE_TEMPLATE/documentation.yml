@@ -1,0 +1,119 @@
+name: Documentation Issue
+description: Report problems with documentation or suggest improvements
+title: '[Docs]: '
+labels: ['documentation', 'triage']
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping us improve our documentation!
+
+        **Before submitting, please:**
+        - Check if this documentation issue has already been reported
+        - Be specific about which document or section is affected
+
+  - type: dropdown
+    id: doc-type
+    attributes:
+      label: Documentation Type
+      description: What type of documentation is affected?
+      options:
+        - README
+        - Getting Started Guide
+        - API Documentation
+        - Code Comments
+        - Configuration Files
+        - Examples
+        - Contributing Guidelines
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: doc-location
+    attributes:
+      label: Document Location
+      description: Where is the problematic documentation located?
+      placeholder: e.g., README.md, docs/getting-started.md, line 42
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - Missing documentation
+        - Outdated information
+        - Unclear or confusing
+        - Incorrect information
+        - Broken links
+        - Typos/grammar
+        - Formatting issues
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the documentation issue in detail.
+      placeholder: |
+        What's wrong with the documentation?
+
+        What should it say instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-content
+    attributes:
+      label: Current Content (if applicable)
+      description: Copy the current problematic content here.
+      placeholder: |
+        [Paste the current content that needs to be fixed]
+      render: markdown
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: Suggested Content (if applicable)
+      description: What should the documentation say instead?
+      placeholder: |
+        [Paste your suggested content here]
+      render: markdown
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this documentation fix?
+      options:
+        - Critical (blocking users)
+        - High (confusing many users)
+        - Medium (minor confusion)
+        - Low (cosmetic)
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: How does this documentation issue affect users?
+      placeholder: |
+        - Users get confused about...
+        - Developers can't figure out how to...
+        - Teams waste time because...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our Code of Conduct
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

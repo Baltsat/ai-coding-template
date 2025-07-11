@@ -1,0 +1,36 @@
+name: Dependencies
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Run weekly on Monday at midnight
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: read
+  packages: read
+  # This is used to submit the dependency graph
+  id-token: write
+
+jobs:
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for outdated dependencies
+        run: npm outdated || true
+
+      - name: Audit dependencies for security vulnerabilities
+        run: npm audit || true
+
+      - name: Submit Dependency Snapshot
+        uses: advanced-security/npm-dependency-submission-action@v3

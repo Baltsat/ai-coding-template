@@ -1,0 +1,103 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+version-resolver:
+  major:
+    labels:
+      - 'type: major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'type: minor'
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'type: patch'
+      - 'bug'
+      - 'bugfix'
+      - 'fix'
+      - 'chore'
+      - 'dependencies'
+  default: patch
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+      - 'type: feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'bugfix'
+      - 'fix'
+      - 'type: fix'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+      - 'docs'
+      - 'type: docs'
+  - title: '🔧 Maintenance'
+    labels:
+      - 'chore'
+      - 'maintenance'
+      - 'type: chore'
+  - title: '📦 Dependencies'
+    labels:
+      - 'dependencies'
+      - 'deps'
+      - 'type: deps'
+  - title: '⚡ Performance'
+    labels:
+      - 'performance'
+      - 'perf'
+      - 'type: perf'
+  - title: '🔒 Security'
+    labels:
+      - 'security'
+      - 'type: security'
+  - title: '🧪 Tests'
+    labels:
+      - 'test'
+      - 'tests'
+      - 'testing'
+      - 'type: test'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+
+template: |
+  ## What's Changed
+
+  $CHANGES
+
+  ## Contributors
+
+  Thanks to all contributors who made this release possible! 🎉
+
+  $CONTRIBUTORS
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+
+autolabeler:
+  - label: 'feature'
+    title:
+      - '/^feat(\(.+\))?: .+/'
+  - label: 'bug'
+    title:
+      - '/^fix(\(.+\))?: .+/'
+  - label: 'chore'
+    title:
+      - '/^chore(\(.+\))?: .+/'
+  - label: 'documentation'
+    title:
+      - '/^docs(\(.+\))?: .+/'
+  - label: 'dependencies'
+    title:
+      - '/^(deps|build)(\(.+\))?: .+/'
+  - label: 'breaking'
+    title:
+      - '/BREAKING CHANGE/'
+    body:
+      - '/BREAKING CHANGE/'
