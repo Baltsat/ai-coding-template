@@ -4,12 +4,12 @@
   "description": "A template repository with best practices",
   "scripts": {
     "prepare": "husky install",
-    "lint": "eslint --config .github/linters/.eslintrc.js 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/'",
-    "lint:fix": "eslint --config .github/linters/.eslintrc.js --fix 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/'",
+    "lint": "eslint --config .github/linters/.eslintrc.js 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/' --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint --config .github/linters/.eslintrc.js --fix 'src/**/*.{js,ts,jsx,tsx}' '.github/config/**/*.js' --ignore-pattern 'node_modules/' --no-error-on-unmatched-pattern",
     "format": "prettier --config .github/linters/.prettierrc --write .",
     "test": "jest --passWithNoTests",
     "ci": "npm run lint && npm test",
-    "build": "tsc",
+    "build": "if [ -d \"src\" ]; then tsc; else echo \"No source files to build\"; fi",
     "release": "semantic-release"
   },
   "devDependencies": {
