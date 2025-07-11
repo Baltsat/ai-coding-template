@@ -14,18 +14,32 @@ We follow an **Observability-Driven Development** approach. This means that plan
 ### Development Phases:
 
 1.  **Planning & Requirements:**
-    -   **Define Business Metrics:** Collaborate with Product Managers to define which business events and KPIs must be tracked.
-    -   **Plan Technical Telemetry:** Design the required traces, metrics, and logs to monitor system health and performance.
+    - **Define Business Metrics:** Collaborate with Product Managers to define which business events and KPIs must be tracked.
+    - **Plan Technical Telemetry:** Design the required traces, metrics, and logs to monitor system health and performance.
 2.  **Implementation:**
-    -   Implement the core feature functionality first.
-    -   Add telemetry instrumentation (tracing, metrics, structured logging) second.
+    - Implement the core feature functionality first.
+    - Add telemetry instrumentation (tracing, metrics, structured logging) second.
 3.  **Testing & Review:**
-    -   Verify that telemetry data is being correctly emitted and displayed.
-    -   Ensure trace context is propagated across service boundaries.
-    -   Include telemetry implementation checks in the code review process.
+    - Verify that telemetry data is being correctly emitted and displayed.
+    - Ensure trace context is propagated across service boundaries.
+    - Include telemetry implementation checks in the code review process.
 4.  **Visualization & Alerting:**
-    -   Create Grafana dashboards to visualize the new data.
-    -   Configure alerts for critical performance indicators.
+    - Create Grafana dashboards to visualize the new data.
+    - Configure alerts for critical performance indicators.
+
+---
+
+### 1.1. Mandatory Telemetry Standard for Cursor Components
+
+**Important:** While this document provides general guidelines for all applications, code related to core **Cursor components** must adhere to a stricter, more specific set of rules outlined in our official telemetry standard.
+
+These rules ensure absolute consistency and the highest quality of observability data across the entire platform.
+
+All developers working on Cursor components are required to be familiar with and strictly follow this standard:
+
+➡️ **[Mandatory Telemetry Standard for Cursor Components](./cursor_telemetry_standard.mdc)**
+
+---
 
 ## 2. LGTM Stack Overview
 
@@ -33,16 +47,16 @@ Our observability stack consists of Loki, Grafana, Tempo, and Prometheus (or Mim
 
 ### Infrastructure Access
 
--   **Grafana UI:** `http://<server-ip>:3000`
-    -   Default credentials: `admin/admin` (must be changed on first login).
--   **OTLP Endpoint (gRPC):** `http://<server-ip>:4317`
--   **Loki Endpoint:** `http://<server-ip>:3100`
--   **Prometheus Endpoint:** `http://<server-ip>:9090`
--   **Tempo Endpoint:** `http://<server-ip>:3200`
+- **Grafana UI:** `http://<server-ip>:3000`
+    - Default credentials: `admin/admin` (must be changed on first login).
+- **OTLP Endpoint (gRPC):** `http://<server-ip>:4317`
+- **Loki Endpoint:** `http://<server-ip>:3100`
+- **Prometheus Endpoint:** `http://<server-ip>:9090`
+- **Tempo Endpoint:** `http://<server-ip>:3200`
 
 ### Useful Queries
 
--   **PromQL (Prometheus/Metrics):**
+- **PromQL (Prometheus/Metrics):**
 
     ```promql
     // Request rate by HTTP status code over the last 5 minutes
@@ -52,7 +66,7 @@ Our observability stack consists of Loki, Grafana, Tempo, and Prometheus (or Mim
     histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
     ```
 
--   **LogQL (Loki):**
+- **LogQL (Loki):**
 
     ```logql
     // Filter for error logs from the "myapp" application
@@ -62,7 +76,7 @@ Our observability stack consists of Loki, Grafana, Tempo, and Prometheus (or Mim
     sum by(service) (count_over_time({app="myapp"} |= "error" [5m]))
     ```
 
--   **TraceQL (Tempo):**
+- **TraceQL (Tempo):**
 
     ```traceql
     // Find slow traces (duration > 500ms)
@@ -105,6 +119,8 @@ def my_function():
         span.set_attribute("my.attribute", "my.value")
         # Your code here
 ```
+
+````
 
 ### Node.js / JavaScript
 
@@ -150,14 +166,14 @@ function myFunction() {
 
 All applications **must** implement telemetry for the following areas:
 
--   [ ] **HTTP Requests:** Endpoints, status codes, response time.
--   [ ] **Database Queries:** Duration, errors, operation type.
--   [ ] **Third-Party API Calls:** Success/failure, response time.
--   [ ] **Background Tasks/Jobs:** Duration, errors, retries.
--   [ ] **User Actions:** Registrations, logins, payments.
--   [ ] **System-Level Metrics:** CPU, memory usage, disk I/O.
--   [ ] **Custom Business Events:** Feature adoption, user behavior, conversions.
--   [ ] **AI/ML Systems:** Model performance, latency, data drift.
+- [ ] **HTTP Requests:** Endpoints, status codes, response time.
+- [ ] **Database Queries:** Duration, errors, operation type.
+- [ ] **Third-Party API Calls:** Success/failure, response time.
+- [ ] **Background Tasks/Jobs:** Duration, errors, retries.
+- [ ] **User Actions:** Registrations, logins, payments.
+- [ ] **System-Level Metrics:** CPU, memory usage, disk I/O.
+- [ ] **Custom Business Events:** Feature adoption, user behavior, conversions.
+- [ ] **AI/ML Systems:** Model performance, latency, data drift.
 
 ## 5. Core Telemetry Components
 
@@ -165,31 +181,31 @@ All applications **must** implement telemetry for the following areas:
 
 Traces track a request's journey through various services.
 
--   Trace all API endpoints and service-to-service communications.
--   Use consistent, descriptive names for spans (e.g., `HTTP GET /users/:id`, `db:user:find`).
--   Include metadata: `http.method`, `http.url`, `http.status_code`, `db.statement`.
--   **Crucially**, ensure trace context is propagated across service boundaries.
+- Trace all API endpoints and service-to-service communications.
+- Use consistent, descriptive names for spans (e.g., `HTTP GET /users/:id`, `db:user:find`).
+- Include metadata: `http.method`, `http.url`, `http.status_code`, `db.statement`.
+- **Crucially**, ensure trace context is propagated across service boundaries.
 
 ### 2. Metrics (Prometheus)
 
 Metrics are numerical measurements aggregated over time.
 
--   **Standard Metrics:**
-    -   `http_requests_total`: Counter for requests (labels: endpoint, status).
-    -   `http_request_duration_seconds`: Histogram for response latency.
-    -   `application_errors_total`: Counter for errors.
-    -   `system_cpu_utilization`: Gauge for CPU usage.
--   **Business Metrics:** Application-specific metrics (e.g., `user_registrations_total`).
--   Use descriptive names (`domain_object_action_unit`) and proper labels. Avoid high-cardinality labels.
+- **Standard Metrics:**
+    - `http_requests_total`: Counter for requests (labels: endpoint, status).
+    - `http_request_duration_seconds`: Histogram for response latency.
+    - `application_errors_total`: Counter for errors.
+    - `system_cpu_utilization`: Gauge for CPU usage.
+- **Business Metrics:** Application-specific metrics (e.g., `user_registrations_total`).
+- Use descriptive names (`domain_object_action_unit`) and proper labels. Avoid high-cardinality labels.
 
 ### 3. Logs (Loki)
 
 Logs are timestamped text records of discrete events.
 
--   **Use structured logging (JSON format).**
--   Include `trace_id` and `span_id` in logs for correlation.
--   Use appropriate log levels (INFO, WARN, ERROR).
--   Add contextual information (e.g., `user_id`, `request_id`) as distinct fields.
+- **Use structured logging (JSON format).**
+- Include `trace_id` and `span_id` in logs for correlation.
+- Use appropriate log levels (INFO, WARN, ERROR).
+- Add contextual information (e.g., `user_id`, `request_id`) as distinct fields.
 
 ## 6. AI & ML Engineering Telemetry Requirements
 
@@ -197,21 +213,21 @@ AI Engineers **must** log all business-meaningful metrics after evaluation and r
 
 ### AI/ML Metrics Checklist
 
--   [ ] **Model performance metrics:** Accuracy, precision, recall, F1 score.
--   [ ] **Inference latency and throughput.**
--   [ ] **Data distribution statistics** and drift indicators.
--   [ ] **Feature importance** and model explanations (XAI).
--   [ ] **User satisfaction** and business impact metrics.
--   [ ] **Resource utilization** during training and inference (GPU/CPU, memory).
--   [ ] **Anomaly detection** and outlier metrics.
+- [ ] **Model performance metrics:** Accuracy, precision, recall, F1 score.
+- [ ] **Inference latency and throughput.**
+- [ ] **Data distribution statistics** and drift indicators.
+- [ ] **Feature importance** and model explanations (XAI).
+- [ ] **User satisfaction** and business impact metrics.
+- [ ] **Resource utilization** during training and inference (GPU/CPU, memory).
+- [ ] **Anomaly detection** and outlier metrics.
 
 ### AI/ML Naming Conventions
 
--   **Trace/Span Name:** `{model_type}.{operation}`
-    -   _Examples:_ `"llm.inference"`, `"classifier.training"`, `"embedding.generation"`
--   **Metric Name:** `ai.{model_type}.{category}.{metric_name}`
-    -   _Examples:_ `"ai.llm.performance.latency"`, `"ai.classifier.accuracy.f1_score"`
--   **Standard Attribute/Label Keys:** `model_name`, `model_version`, `environment`, `feature_set`, `client_id`, `batch_size`.
+- **Trace/Span Name:** `{model_type}.{operation}`
+    - _Examples:_ `"llm.inference"`, `"classifier.training"`, `"embedding.generation"`
+- **Metric Name:** `ai.{model_type}.{category}.{metric_name}`
+    - _Examples:_ `"ai.llm.performance.latency"`, `"ai.classifier.accuracy.f1_score"`
+- **Standard Attribute/Label Keys:** `model_name`, `model_version`, `environment`, `feature_set`, `client_id`, `batch_size`.
 
 ### Implementation Examples (Python)
 
@@ -302,17 +318,17 @@ Business metrics connect technical performance to business outcomes.
 ### Categories of Business Metrics
 
 1.  **User Engagement:**
-    -   Session duration and frequency.
-    -   Feature adoption rates.
-    -   User journeys and conversion funnels.
+    - Session duration and frequency.
+    - Feature adoption rates.
+    - User journeys and conversion funnels.
 2.  **Conversion Metrics:**
-    -   Registration funnel completion.
-    -   Purchase funnel steps.
-    -   Trial-to-paid conversion rates.
+    - Registration funnel completion.
+    - Purchase funnel steps.
+    - Trial-to-paid conversion rates.
 3.  **Business Value:**
-    -   Revenue, Average Order Value (AOV).
-    -   Customer Acquisition Cost (CAC), Lifetime Value (LTV).
-    -   Churn Rate.
+    - Revenue, Average Order Value (AOV).
+    - Customer Acquisition Cost (CAC), Lifetime Value (LTV).
+    - Churn Rate.
 
 ### Implementation Example: Tracking a Conversion Funnel
 
@@ -374,31 +390,31 @@ Use this checklist during code reviews to ensure telemetry implementations meet 
 
 #### Tracing Review
 
--   [ ] All API endpoints are traced.
--   [ ] All database operations and external service calls are traced.
--   [ ] Span names follow naming conventions.
--   [ ] Error states are properly recorded on spans (`record_exception`, `set_status`).
--   [ ] Business-relevant attributes are included on spans.
+- [ ] All API endpoints are traced.
+- [ ] All database operations and external service calls are traced.
+- [ ] Span names follow naming conventions.
+- [ ] Error states are properly recorded on spans (`record_exception`, `set_status`).
+- [ ] Business-relevant attributes are included on spans.
 
 #### Metrics Review
 
--   [ ] All required business and technical metrics are implemented.
--   [ ] Metric names follow naming conventions.
--   [ ] Labels have low cardinality.
--   [ ] Histograms are used for latency measurements.
+- [ ] All required business and technical metrics are implemented.
+- [ ] Metric names follow naming conventions.
+- [ ] Labels have low cardinality.
+- [ ] Histograms are used for latency measurements.
 
 #### Logging Review
 
--   [ ] Logs use a structured format (JSON).
--   [ ] All logs include `trace_id` and `span_id` when available.
--   [ ] Sensitive information (PII, passwords) is redacted.
--   [ ] Appropriate log levels are used.
+- [ ] Logs use a structured format (JSON).
+- [ ] All logs include `trace_id` and `span_id` when available.
+- [ ] Sensitive information (PII, passwords) is redacted.
+- [ ] Appropriate log levels are used.
 
 #### General
 
--   [ ] Telemetry implementation does not significantly impact performance.
--   [ ] Appropriate sampling is used for high-volume services.
--   [ ] Documentation is updated with descriptions of new metrics.
+- [ ] Telemetry implementation does not significantly impact performance.
+- [ ] Appropriate sampling is used for high-volume services.
+- [ ] Documentation is updated with descriptions of new metrics.
 
 ## 10. Troubleshooting
 
@@ -411,13 +427,13 @@ Use this checklist during code reviews to ensure telemetry implementations meet 
 
 ### Common Errors: "context deadline exceeded" or "failed to export spans"
 
--   **Cause:** Network issues or collector unavailability.
--   **Fix:** Verify network connectivity. Ensure the OTLP Exporter is configured with a reasonable timeout (e.g., `timeout=30` seconds).
+- **Cause:** Network issues or collector unavailability.
+- **Fix:** Verify network connectivity. Ensure the OTLP Exporter is configured with a reasonable timeout (e.g., `timeout=30` seconds).
 
 ### Trace Context Not Propagating
 
--   **Cause:** Incorrect or missing `Propagator` configuration.
--   **Fix:** Ensure a global `TextMapPropagator` (typically `W3CTraceContextPropagator`) is configured in the SDK and is used to inject/extract headers in your HTTP clients and server frameworks.
+- **Cause:** Incorrect or missing `Propagator` configuration.
+- **Fix:** Ensure a global `TextMapPropagator` (typically `W3CTraceContextPropagator`) is configured in the SDK and is used to inject/extract headers in your HTTP clients and server frameworks.
 
 ## 11. Dependency Management
 
@@ -448,3 +464,4 @@ For production, pin exact versions:
     }
 }
 ```
+````

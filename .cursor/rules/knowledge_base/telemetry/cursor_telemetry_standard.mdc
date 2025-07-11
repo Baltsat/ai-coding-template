@@ -1,0 +1,240 @@
+---
+description: This is a strict, mandatory telemetry standard specifically for Cursor components. It contains only clear rules and requirements without unnecessary explanations.
+alwaysApply: false
+---
+
+# Telemetry Rules for Cursor Components
+
+This document outlines the mandatory telemetry implementation rules for all cursor components. These rules ensure consistent, high-quality observability data across all cursor applications.
+
+## Mandatory Rules
+
+1. **All HTTP endpoints must be traced**
+    - Every API endpoint must create a new span
+    - HTTP method, route pattern, and status code must be captured as span attributes
+    - Request and response size should be measured and recorded
+
+2. **Database operations must be instrumented**
+    - All database queries must be traced with their own spans
+    - SQL queries should be sanitized and captured as span attributes
+    - Query execution time must be recorded as a metric
+    - Connection pool metrics must be exposed
+
+3. **Error handling must be comprehensive**
+    - All exceptions must be captured in spans and logs
+    - Error logs must include trace ID for correlation
+    - Error counts must be exposed as metrics with appropriate labels
+    - Custom error attributes must be added to spans for debugging
+
+4. **Performance metrics are required**
+    - Request latency histograms must be implemented
+    - CPU and memory usage must be exposed
+    - Garbage collection metrics must be monitored
+    - Thread/goroutine counts must be tracked
+
+5. **Business metrics must be defined**
+    - Each cursor component must define and track at least 3 business-relevant metrics
+    - User action counts must be aggregated and exposed
+    - Success/failure rates for critical operations must be measured
+
+## Implementation Requirements
+
+### Span Naming Convention
+
+- API endpoints: `HTTP {METHOD} {route_pattern}`
+- Database operations: `DB {operation} {table}`
+- External calls: `{service} {operation}`
+
+### Required Span Attributes
+
+- `service.name`: Component name
+- `deployment.environment`: Environment name
+- `version`: Service version
+- `http.method`: For HTTP requests
+- `http.url`: For HTTP requests
+- `http.status_code`: For HTTP responses
+- `db.system`: For database operations
+- `db.operation`: For database operations
+
+### Metric Naming Convention
+
+- Use lowercase with underscores
+- Format: `cursor_{component}_{metric_name}_{unit}`
+- Examples:
+    - `cursor_auth_login_attempts_total`
+    - `cursor_api_request_duration_seconds`
+    - `cursor_db_connection_pool_size`
+
+### Log Format Requirements
+
+- All logs must be in JSON format
+- Must include: timestamp, service name, log level, message
+- Must include trace ID when available
+- Should include span ID when within a traced operation
+- Must use structured fields, not complex nested objects
+
+## Example Implementation
+
+```python
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# Initialize tracer
+trace.set_tracer_provider(TracerProvider())
+tracer = trace.get_tracer("cursor-auth-service")
+
+# Configure exporter
+otlp_exporter = OTLPSpanExporter(endpoint="localhost:4317", insecure=True)
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+# Example instrumentation
+@app.route("/login", methods=["POST"])
+def login():
+    with tracer.start_as_current_span(
+        "HTTP POST /login",
+        attributes={
+            "service.name": "cursor-auth",
+            "http.method": "POST",
+            "http.route": "/login"
+        }
+    ) as span:
+        try:
+            # Process login
+            user = authenticate_user(request.json)
+            span.set_attribute("user.id", user.id)
+            span.set_attribute("http.status_code", 200)
+            return jsonify({"success": True})
+        except Exception as e:
+            span.set_status(trace.Status(trace.StatusCode.ERROR))
+            span.record_exception(e)
+            span.set_attribute("http.status_code", 500)
+            return jsonify({"success": False}), 500
+```
+
+## Validation Process
+
+All cursor components must pass the automated telemetry validation process:
+
+1. Telemetry coverage check (>90% of code paths)
+2. Required attributes validation
+3. Naming convention compliance
+4. End-to-end trace validation# Telemetry Rules for Cursor Components
+
+This document outlines the mandatory telemetry implementation rules for all cursor components. These rules ensure consistent, high-quality observability data across all cursor applications.
+
+## Mandatory Rules
+
+1. **All HTTP endpoints must be traced**
+    - Every API endpoint must create a new span
+    - HTTP method, route pattern, and status code must be captured as span attributes
+    - Request and response size should be measured and recorded
+
+2. **Database operations must be instrumented**
+    - All database queries must be traced with their own spans
+    - SQL queries should be sanitized and captured as span attributes
+    - Query execution time must be recorded as a metric
+    - Connection pool metrics must be exposed
+
+3. **Error handling must be comprehensive**
+    - All exceptions must be captured in spans and logs
+    - Error logs must include trace ID for correlation
+    - Error counts must be exposed as metrics with appropriate labels
+    - Custom error attributes must be added to spans for debugging
+
+4. **Performance metrics are required**
+    - Request latency histograms must be implemented
+    - CPU and memory usage must be exposed
+    - Garbage collection metrics must be monitored
+    - Thread/goroutine counts must be tracked
+
+5. **Business metrics must be defined**
+    - Each cursor component must define and track at least 3 business-relevant metrics
+    - User action counts must be aggregated and exposed
+    - Success/failure rates for critical operations must be measured
+
+## Implementation Requirements
+
+### Span Naming Convention
+
+- API endpoints: `HTTP {METHOD} {route_pattern}`
+- Database operations: `DB {operation} {table}`
+- External calls: `{service} {operation}`
+
+### Required Span Attributes
+
+- `service.name`: Component name
+- `deployment.environment`: Environment name
+- `version`: Service version
+- `http.method`: For HTTP requests
+- `http.url`: For HTTP requests
+- `http.status_code`: For HTTP responses
+- `db.system`: For database operations
+- `db.operation`: For database operations
+
+### Metric Naming Convention
+
+- Use lowercase with underscores
+- Format: `cursor_{component}_{metric_name}_{unit}`
+- Examples:
+    - `cursor_auth_login_attempts_total`
+    - `cursor_api_request_duration_seconds`
+    - `cursor_db_connection_pool_size`
+
+### Log Format Requirements
+
+- All logs must be in JSON format
+- Must include: timestamp, service name, log level, message
+- Must include trace ID when available
+- Should include span ID when within a traced operation
+- Must use structured fields, not complex nested objects
+
+## Example Implementation
+
+```python
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# Initialize tracer
+trace.set_tracer_provider(TracerProvider())
+tracer = trace.get_tracer("cursor-auth-service")
+
+# Configure exporter
+otlp_exporter = OTLPSpanExporter(endpoint="localhost:4317", insecure=True)
+trace.get_tracer_provider().add_span_processor(BatchSpanProcessor(otlp_exporter))
+
+# Example instrumentation
+@app.route("/login", methods=["POST"])
+def login():
+    with tracer.start_as_current_span(
+        "HTTP POST /login",
+        attributes={
+            "service.name": "cursor-auth",
+            "http.method": "POST",
+            "http.route": "/login"
+        }
+    ) as span:
+        try:
+            # Process login
+            user = authenticate_user(request.json)
+            span.set_attribute("user.id", user.id)
+            span.set_attribute("http.status_code", 200)
+            return jsonify({"success": True})
+        except Exception as e:
+            span.set_status(trace.Status(trace.StatusCode.ERROR))
+            span.record_exception(e)
+            span.set_attribute("http.status_code", 500)
+            return jsonify({"success": False}), 500
+```
+
+## Validation Process
+
+All cursor components must pass the automated telemetry validation process:
+
+1. Telemetry coverage check (>90% of code paths)
+2. Required attributes validation
+3. Naming convention compliance
+4. End-to-end trace validation
