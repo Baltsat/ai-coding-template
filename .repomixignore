@@ -151,3 +151,5 @@ repomix-output-*.xml
 *.pdf
 
 .stylelintignore
+
+.claude/
