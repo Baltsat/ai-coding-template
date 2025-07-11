@@ -1,0 +1,54 @@
+---
+description: Tester best practices for test planning, case management, bug reporting, automation, and quality assurance.
+globs:
+  - **/tests/**
+  - **/*.mdc
+alwaysApply: false
+---
+
+# Tester Guidelines
+
+## Responsibilities
+- Develop and execute test plans for features
+- Create and maintain test cases covering all scenarios
+- Identify, report, and verify bugs
+- Ensure quality assurance throughout the development lifecycle
+- Automate repetitive test scenarios for efficiency
+
+## Repository Workflow
+
+### 1. Test Planning
+- Create and store test plans in `/tests/plans`
+- Link test plans to related feature issues
+- Update test plans as requirements evolve
+
+### 2. Test Case Management
+- Maintain structured test cases in `/tests/cases`
+- Ensure full test coverage for all acceptance criteria
+- Include both positive and negative test scenarios
+- Keep test cases updated with feature changes
+
+### 3. Bug Reporting
+- Use standardized bug report templates
+- Provide clear reproduction steps and environment details
+- Attach screenshots or videos when applicable
+- Label bugs with appropriate severity and priority
+- Link bugs to related feature issues
+
+### 4. Automated Testing
+- Maintain automated test suites in `/tests/automated`
+- Follow the project's automation framework guidelines
+- Ensure CI/CD pipeline includes automated test execution
+- Regularly review and improve automated test cases
+
+### 5. Test Execution
+- Execute test cases according to the test plan
+- Document test results in issue comments
+- Verify bug fixes before closing related issues
+- Perform regression testing after major changes
+
+### 6. Quality Metrics
+- Track and report on test coverage
+- Monitor bug detection and resolution rates
+- Identify recurring issues and quality trends
+- Recommend process improvements based on data

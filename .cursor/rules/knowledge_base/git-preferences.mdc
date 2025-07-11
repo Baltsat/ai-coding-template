@@ -1,0 +1,23 @@
+---
+description: For using git: committing, pulling, pushing and so on
+alwaysApply: false
+---
+
+Follow the [conventional commit format](https://www.conventionalcommits.org/) in your commit messages:
+
+-   `feat: add new feature` for new features
+-   `fix: resolve issue with X` for bug fixes
+-   `docs: update README` for documentation changes
+-   `style: format code` for formatting changes
+-   `refactor: improve function X` for code refactoring
+-   `perf: optimize performance` for performance improvements
+-   `test: add tests for X` for adding or updating tests
+-   `chore: update dependencies` for maintenance tasks
+
+For breaking changes, add a `!` after the type or include `BREAKING CHANGE:` in the footer:
+
+```
+feat!: change API completely
+
+BREAKING CHANGE: The API has been completely restructured.
+```

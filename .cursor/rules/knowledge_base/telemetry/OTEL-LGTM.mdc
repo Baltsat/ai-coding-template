@@ -1,0 +1,450 @@
+---
+description: Guidelines for implementing telemetry and monitoring (OTEL-LGTM stack)
+alwaysApply: false
+---
+
+# Telemetry and Monitoring Guidelines (OTEL-LGTM Stack)
+
+This document provides comprehensive instructions and standards for implementing observability in your applications using the **OTEL-LGTM** stack (OpenTelemetry, Loki, Grafana, Tempo, Prometheus/Metrics).
+
+## 1. Philosophy and Workflow
+
+We follow an **Observability-Driven Development** approach. This means that planning for telemetry (metrics, logs, and traces) is an integral part of the development process, not an afterthought.
+
+### Development Phases:
+
+1.  **Planning & Requirements:**
+    -   **Define Business Metrics:** Collaborate with Product Managers to define which business events and KPIs must be tracked.
+    -   **Plan Technical Telemetry:** Design the required traces, metrics, and logs to monitor system health and performance.
+2.  **Implementation:**
+    -   Implement the core feature functionality first.
+    -   Add telemetry instrumentation (tracing, metrics, structured logging) second.
+3.  **Testing & Review:**
+    -   Verify that telemetry data is being correctly emitted and displayed.
+    -   Ensure trace context is propagated across service boundaries.
+    -   Include telemetry implementation checks in the code review process.
+4.  **Visualization & Alerting:**
+    -   Create Grafana dashboards to visualize the new data.
+    -   Configure alerts for critical performance indicators.
+
+## 2. LGTM Stack Overview
+
+Our observability stack consists of Loki, Grafana, Tempo, and Prometheus (or Mimir/Metrics), with data collected via the OpenTelemetry Collector.
+
+### Infrastructure Access
+
+-   **Grafana UI:** `http://<server-ip>:3000`
+    -   Default credentials: `admin/admin` (must be changed on first login).
+-   **OTLP Endpoint (gRPC):** `http://<server-ip>:4317`
+-   **Loki Endpoint:** `http://<server-ip>:3100`
+-   **Prometheus Endpoint:** `http://<server-ip>:9090`
+-   **Tempo Endpoint:** `http://<server-ip>:3200`
+
+### Useful Queries
+
+-   **PromQL (Prometheus/Metrics):**
+
+    ```promql
+    // Request rate by HTTP status code over the last 5 minutes
+    sum by (status_code) (rate(http_requests_total[5m]))
+
+    // 95th percentile response latency
+    histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))
+    ```
+
+-   **LogQL (Loki):**
+
+    ```logql
+    // Filter for error logs from the "myapp" application
+    {app="myapp"} |= "error"
+
+    // Count of errors by service over the last 5 minutes
+    sum by(service) (count_over_time({app="myapp"} |= "error" [5m]))
+    ```
+
+-   **TraceQL (Tempo):**
+
+    ```traceql
+    // Find slow traces (duration > 500ms)
+    { duration > 500ms }
+
+    // Find traces with an error status in a specific service
+    {service.name="auth-service"} && {status=error}
+    ```
+
+## 3. Quick Start: Minimum Viable Observability
+
+Use these minimal implementations to get started quickly.
+
+### Python
+
+```python
+# requirements.txt
+# opentelemetry-api==1.18.0
+# opentelemetry-sdk==1.18.0
+# opentelemetry-exporter-otlp==1.18.0
+
+from opentelemetry import trace
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+
+# Set up tracing
+resource = Resource.create({"service.name": "my-service-name"})
+provider = TracerProvider(resource=resource)
+processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://<server-ip>:4317", insecure=True))
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
+tracer = trace.get_tracer(__name__)
+
+# Use in your code
+def my_function():
+    with tracer.start_as_current_span("my-operation") as span:
+        span.set_attribute("my.attribute", "my.value")
+        # Your code here
+```
+
+### Node.js / JavaScript
+
+```javascript
+// npm install @opentelemetry/api @opentelemetry/sdk-node @opentelemetry/exporter-trace-otlp-proto
+const { NodeTracerProvider } = require("@opentelemetry/sdk-node");
+const { Resource } = require("@opentelemetry/resources");
+const {
+    SemanticResourceAttributes,
+} = require("@opentelemetry/semantic-conventions");
+const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
+const {
+    OTLPTraceExporter,
+} = require("@opentelemetry/exporter-trace-otlp-proto");
+const { trace } = require("@opentelemetry/api");
+
+// Set up tracing
+const resource = new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: "my-service-name",
+});
+const provider = new NodeTracerProvider({ resource });
+const exporter = new OTLPTraceExporter({
+    url: "http://<server-ip>:4317/v1/traces",
+});
+provider.addSpanProcessor(new BatchSpanProcessor(exporter));
+provider.register();
+
+const tracer = trace.getTracer("my-service-instrumentation");
+
+// Use in your code
+function myFunction() {
+    const span = tracer.startSpan("my-operation");
+    try {
+        span.setAttribute("my.attribute", "my.value");
+        // Your code here
+    } finally {
+        span.end();
+    }
+}
+```
+
+## 4. Required Instrumentation Checklist
+
+All applications **must** implement telemetry for the following areas:
+
+-   [ ] **HTTP Requests:** Endpoints, status codes, response time.
+-   [ ] **Database Queries:** Duration, errors, operation type.
+-   [ ] **Third-Party API Calls:** Success/failure, response time.
+-   [ ] **Background Tasks/Jobs:** Duration, errors, retries.
+-   [ ] **User Actions:** Registrations, logins, payments.
+-   [ ] **System-Level Metrics:** CPU, memory usage, disk I/O.
+-   [ ] **Custom Business Events:** Feature adoption, user behavior, conversions.
+-   [ ] **AI/ML Systems:** Model performance, latency, data drift.
+
+## 5. Core Telemetry Components
+
+### 1. Traces (Tempo)
+
+Traces track a request's journey through various services.
+
+-   Trace all API endpoints and service-to-service communications.
+-   Use consistent, descriptive names for spans (e.g., `HTTP GET /users/:id`, `db:user:find`).
+-   Include metadata: `http.method`, `http.url`, `http.status_code`, `db.statement`.
+-   **Crucially**, ensure trace context is propagated across service boundaries.
+
+### 2. Metrics (Prometheus)
+
+Metrics are numerical measurements aggregated over time.
+
+-   **Standard Metrics:**
+    -   `http_requests_total`: Counter for requests (labels: endpoint, status).
+    -   `http_request_duration_seconds`: Histogram for response latency.
+    -   `application_errors_total`: Counter for errors.
+    -   `system_cpu_utilization`: Gauge for CPU usage.
+-   **Business Metrics:** Application-specific metrics (e.g., `user_registrations_total`).
+-   Use descriptive names (`domain_object_action_unit`) and proper labels. Avoid high-cardinality labels.
+
+### 3. Logs (Loki)
+
+Logs are timestamped text records of discrete events.
+
+-   **Use structured logging (JSON format).**
+-   Include `trace_id` and `span_id` in logs for correlation.
+-   Use appropriate log levels (INFO, WARN, ERROR).
+-   Add contextual information (e.g., `user_id`, `request_id`) as distinct fields.
+
+## 6. AI & ML Engineering Telemetry Requirements
+
+AI Engineers **must** log all business-meaningful metrics after evaluation and reflection.
+
+### AI/ML Metrics Checklist
+
+-   [ ] **Model performance metrics:** Accuracy, precision, recall, F1 score.
+-   [ ] **Inference latency and throughput.**
+-   [ ] **Data distribution statistics** and drift indicators.
+-   [ ] **Feature importance** and model explanations (XAI).
+-   [ ] **User satisfaction** and business impact metrics.
+-   [ ] **Resource utilization** during training and inference (GPU/CPU, memory).
+-   [ ] **Anomaly detection** and outlier metrics.
+
+### AI/ML Naming Conventions
+
+-   **Trace/Span Name:** `{model_type}.{operation}`
+    -   _Examples:_ `"llm.inference"`, `"classifier.training"`, `"embedding.generation"`
+-   **Metric Name:** `ai.{model_type}.{category}.{metric_name}`
+    -   _Examples:_ `"ai.llm.performance.latency"`, `"ai.classifier.accuracy.f1_score"`
+-   **Standard Attribute/Label Keys:** `model_name`, `model_version`, `environment`, `feature_set`, `client_id`, `batch_size`.
+
+### Implementation Examples (Python)
+
+#### Sampling Configuration
+
+```python
+# For high-throughput inference systems, adjust sampling rates appropriately.
+# Sample 10% of requests for high-volume inference endpoints.
+from opentelemetry.sdk.trace.sampling import ParentBasedTraceIdRatio
+sampler = ParentBasedTraceIdRatio(0.1)
+
+# For model training or critical paths, always sample.
+# from opentelemetry.sdk.trace.sampling import AlwaysOnSampler
+# sampler = AlwaysOnSampler()
+```
+
+#### Training Metrics
+
+```python
+# Define training metrics
+training_loss = meter.create_gauge("ai.model.training.loss", description="Current loss value during model training")
+learning_rate = meter.create_gauge("ai.model.training.learning_rate", description="Current learning rate")
+
+# Log training progress
+def log_training_progress(model_name, epoch, loss, lr):
+    with tracer.start_as_current_span("model.training.batch") as span:
+        # Set span attributes
+        span.set_attribute("model.name", model_name)
+        span.set_attribute("training.epoch", epoch)
+        span.set_attribute("training.loss", loss)
+
+        # Update metrics
+        training_loss.set(loss, {"model": model_name})
+        learning_rate.set(lr, {"model": model_name})
+
+        # Structured log
+        logger.info("Training progress", extra={"model": model_name, "epoch": epoch, "loss": loss})
+```
+
+#### ML Framework Integration
+
+Use the appropriate auto-instrumentation libraries:
+
+```python
+# TensorFlow
+from opentelemetry.instrumentation.tensorflow import TensorflowInstrumentor
+TensorflowInstrumentor().instrument()
+
+# PyTorch
+from opentelemetry.instrumentation.torch import TorchInstrumentor
+TorchInstrumentor().instrument()
+
+# Scikit-learn
+from opentelemetry.instrumentation.sklearn import SklearnInstrumentor
+SklearnInstrumentor().instrument()
+
+# Hugging Face
+from opentelemetry.instrumentation.transformers import TransformersInstrumentor
+TransformersInstrumentor().instrument()
+```
+
+#### Model Evaluation Metrics
+
+```python
+from sklearn.metrics import accuracy_score, f1_score
+
+def calculate_and_log_evaluation_metrics(model_name, y_true, y_pred):
+    with tracer.start_as_current_span("model.evaluation") as span:
+        accuracy = float(accuracy_score(y_true, y_pred))
+        f1 = float(f1_score(y_true, y_pred, average='weighted'))
+
+        # Set span attributes
+        span.set_attribute("metric.accuracy", accuracy)
+        span.set_attribute("metric.f1_score", f1)
+
+        # Record as metrics
+        meter.create_gauge(f"ai.model.evaluation.accuracy").set(accuracy, {"model": model_name})
+        meter.create_gauge(f"ai.model.evaluation.f1_score").set(f1, {"model": model_name})
+
+        # Log results
+        logger.info("Model evaluation completed", extra={"model": model_name, "metrics": {"accuracy": accuracy, "f1": f1}})
+```
+
+## 7. Business Metrics Instrumentation Guide
+
+Business metrics connect technical performance to business outcomes.
+
+### Categories of Business Metrics
+
+1.  **User Engagement:**
+    -   Session duration and frequency.
+    -   Feature adoption rates.
+    -   User journeys and conversion funnels.
+2.  **Conversion Metrics:**
+    -   Registration funnel completion.
+    -   Purchase funnel steps.
+    -   Trial-to-paid conversion rates.
+3.  **Business Value:**
+    -   Revenue, Average Order Value (AOV).
+    -   Customer Acquisition Cost (CAC), Lifetime Value (LTV).
+    -   Churn Rate.
+
+### Implementation Example: Tracking a Conversion Funnel
+
+```python
+# Record a conversion funnel step
+with tracer.start_as_current_span("checkout_funnel") as span:
+    span.set_attribute("funnel.step", "payment_info")
+    span.set_attribute("funnel.name", "checkout")
+    span.set_attribute("user.id", user_id)
+
+    # Also track as a counter metric
+    checkout_step_counter.add(1, {
+        "step": "payment_info",
+        "user_type": user_type,
+    })
+```
+
+## 8. Testing and Validation
+
+Testing your telemetry is as critical as testing your application's features.
+
+### Testing Strategies
+
+1.  **Unit Testing:** Use `InMemorySpanExporter` and `InMemoryMetricReader` to verify that your code creates the correct spans and metrics in isolation.
+2.  **Integration Testing:** Test the end-to-end telemetry generation for API requests using a test client and in-memory exporters.
+3.  **End-to-End Testing:** Use `docker-compose` to spin up a test environment with the LGTM stack and verify that data actually arrives at the backends.
+4.  **Performance Testing:** Measure the overhead introduced by instrumentation to ensure it stays within acceptable limits (e.g., < 10%).
+
+### Unit Test Example for a Span (Python)
+
+```python
+from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
+from opentelemetry.sdk.trace.export import SimpleSpanProcessor
+
+def test_function_creates_correct_span():
+    # Setup in-memory exporter
+    memory_exporter = InMemorySpanExporter()
+    span_processor = SimpleSpanProcessor(memory_exporter)
+
+    tracer_provider = TracerProvider()
+    tracer_provider.add_span_processor(span_processor)
+    tracer = tracer_provider.get_tracer(__name__)
+
+    # Run the function to be tested
+    with mock.patch("path.to.your.module.tracer", tracer):
+        my_function_to_test()
+
+    # Assert the results
+    spans = memory_exporter.get_finished_spans()
+    assert len(spans) == 1
+    span = spans[0]
+    assert span.name == "expected-span-name"
+    assert span.attributes["expected.attribute"] == "expected.value"
+```
+
+## 9. Observability Implementation Review Checklist
+
+Use this checklist during code reviews to ensure telemetry implementations meet project standards.
+
+#### Tracing Review
+
+-   [ ] All API endpoints are traced.
+-   [ ] All database operations and external service calls are traced.
+-   [ ] Span names follow naming conventions.
+-   [ ] Error states are properly recorded on spans (`record_exception`, `set_status`).
+-   [ ] Business-relevant attributes are included on spans.
+
+#### Metrics Review
+
+-   [ ] All required business and technical metrics are implemented.
+-   [ ] Metric names follow naming conventions.
+-   [ ] Labels have low cardinality.
+-   [ ] Histograms are used for latency measurements.
+
+#### Logging Review
+
+-   [ ] Logs use a structured format (JSON).
+-   [ ] All logs include `trace_id` and `span_id` when available.
+-   [ ] Sensitive information (PII, passwords) is redacted.
+-   [ ] Appropriate log levels are used.
+
+#### General
+
+-   [ ] Telemetry implementation does not significantly impact performance.
+-   [ ] Appropriate sampling is used for high-volume services.
+-   [ ] Documentation is updated with descriptions of new metrics.
+
+## 10. Troubleshooting
+
+### No Data Appearing in Grafana
+
+1.  **Verify Data is Being Sent:** Use a `ConsoleSpanExporter` in your application to print telemetry to the console and confirm it is being generated.
+2.  **Check Collector Health:** Run `curl http://<server-ip>:4317` (for gRPC) or `curl http://<server-ip>:4318` (for HTTP).
+3.  **Inspect Collector Logs:** Run `docker logs <collector-container-name>`. Look for errors related to exporting data to Loki/Tempo/Prometheus.
+4.  **Check Endpoint Configuration:** Ensure your application is sending data to the correct OTLP Collector address and port.
+
+### Common Errors: "context deadline exceeded" or "failed to export spans"
+
+-   **Cause:** Network issues or collector unavailability.
+-   **Fix:** Verify network connectivity. Ensure the OTLP Exporter is configured with a reasonable timeout (e.g., `timeout=30` seconds).
+
+### Trace Context Not Propagating
+
+-   **Cause:** Incorrect or missing `Propagator` configuration.
+-   **Fix:** Ensure a global `TextMapPropagator` (typically `W3CTraceContextPropagator`) is configured in the SDK and is used to inject/extract headers in your HTTP clients and server frameworks.
+
+## 11. Dependency Management
+
+Use compatible versions of OpenTelemetry libraries. It is highly recommended to pin exact versions to avoid conflicts.
+
+### Python (`requirements.txt`)
+
+```text
+opentelemetry-api==1.18.0
+opentelemetry-sdk==1.18.0
+opentelemetry-exporter-otlp==1.18.0
+# Framework instrumentations
+opentelemetry-instrumentation-fastapi==0.38b0
+opentelemetry-instrumentation-requests==0.38b0
+```
+
+### Node.js (`package.json`)
+
+For production, pin exact versions:
+
+```json
+{
+    "dependencies": {
+        "@opentelemetry/api": "1.4.1",
+        "@opentelemetry/sdk-node": "0.41.1",
+        "@opentelemetry/auto-instrumentations-node": "0.37.1",
+        "@opentelemetry/exporter-trace-otlp-proto": "0.41.1"
+    }
+}
+```
